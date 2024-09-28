@@ -1,0 +1,5 @@
+yasindeger
+
+ls ~/.ssh/
+open ~/.ssh/
+ssh-keygen -t rsa -b 4096 -C "yasindeger@gmail.com"
