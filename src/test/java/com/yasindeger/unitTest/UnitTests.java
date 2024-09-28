@@ -18,6 +18,15 @@ public class UnitTests {
     @Autowired
     private MockMvc mockMvc;
 
+    @DisplayName("Unit Test : 5-3 should be 2")
+    @Test
+    public void testInfo() throws Exception {
+        this.mockMvc.perform(get("/info"))
+                .andExpect(status().is(200))
+                .andExpect(content().string("DEVOPS INFO : "))
+                .andReturn().getResponse().getContentAsString().contains("DEVOPS INFO : ");
+    }
+
     @DisplayName("Unit Test : 2+3 should be 5")
     @Test
     public void testAdd() {
@@ -34,14 +43,7 @@ public class UnitTests {
         assertEquals(2, result);
     }
 
-    @DisplayName("Unit Test : 5-3 should be 2")
-    @Test
-    public void testInfo() throws Exception {
-        this.mockMvc.perform(get("/info"))
-                .andExpect(status().is(200))
-                .andExpect(content().string("DEVOPS INFO : "))
-                .andReturn().getResponse().getContentAsString().contains("DEVOPS INFO : ");
-    }
+
 
 
 }

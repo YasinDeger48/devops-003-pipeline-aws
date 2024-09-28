@@ -8,11 +8,11 @@
         <version>2.7.18</version>
         <relativePath/>
     </parent>
-    <groupId>com.mimaraslan</groupId>
-    <artifactId>devops-002-pipeline</artifactId>
+    <groupId>com.yasindeger</groupId>
+    <artifactId>devops-003-pipeline-aws</artifactId>
     <version>1.0.1</version>
-    <name>devops-002-pipeline</name>
-    <description>devops-002-pipeline</description>
+    <name>devops-003-pipeline-aws</name>
+    <description>devops-003-pipeline-aws</description>
     <url/>
     <licenses>
         <license/>
@@ -88,18 +88,6 @@
                             </execution>
                         </executions>
                     </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-jar-plugin</artifactId>-->
-<!--                <version>3.2.0</version>-->
-<!--                <configuration>-->
-<!--                    <archive>-->
-<!--                        <manifestEntries>-->
-<!--                            <Main-Class>com/yasindeger/AppMain.java</Main-Class>-->
-<!--                        </manifestEntries>-->
-<!--                    </archive>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
         </plugins>
 <!--        Sürümüne takılmadan tüm sürümler alttaki isimle çıkar-->
         <finalName>devops-app</finalName>

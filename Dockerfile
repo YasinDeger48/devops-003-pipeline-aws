@@ -13,7 +13,7 @@ CMD apt-get update
 CMD apt-get upgrade -y
 
 # iç portu sabitlemek için 
-EXPOSE 8081
+EXPOSE 8083
 
 # Uygulamanın çalışacağı komut
 ENTRYPOINT ["java","-jar","devops-app.jar"]
