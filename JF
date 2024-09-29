@@ -1,16 +1,18 @@
 pipeline {
-    agent { label 'aws-jenkins-agent' }
-    tools{
+    agent {
+        label 'aws-jenkins-agent'
+    }
+    tools {
         maven "maven"
         jdk "java17"
     }
-        environment {
+    environment {
         SCANNER_HOME = tool 'sonar-scanner'
-       // RELEASE = "1.0"
-       // IMAGE_NAME = "yasindeger48/$JOB_NAME:v"
+        // RELEASE = "1.0"
+        // IMAGE_NAME = "yasindeger48/$JOB_NAME:v"
     }
     stages {
-          stage('clear workspace') {
+        stage('clear workspace') {
             steps {
                 cleanWs()
             }
@@ -28,11 +30,10 @@ pipeline {
         stage("SonarQube Analysis") {
             steps {
                 withSonarQubeEnv('sonar-server') {
-                      sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=com.yasindeger:devops-003-pipeline-aws \
+                    sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=com.yasindeger:devops-003-pipeline-aws \
                     -Dsonar.projectKey=com.yasindeger:devops-003-pipeline-aws \
                     -Dsonar.java.binaries=target/classes'''
-
-                      //    sh '$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=devops-003-pipeline-aws -Dsonar.projectKey=com.yasindeger:devops-003-pipeline-aws -Dsonar.java.binaries=target/classes'
+                    //    sh '$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=devops-003-pipeline-aws -Dsonar.projectKey=com.yasindeger:devops-003-pipeline-aws -Dsonar.java.binaries=target/classes'
                 }
             }
         }
@@ -48,35 +49,34 @@ pipeline {
                 sh 'docker image prune -a -f'
             }
         }
-
         stage('build docker image') {
             steps {
                 sh 'docker build --build-arg JAR_FILE=target/devops-app.jar -t yasindeger48/$JOB_NAME:v$BUILD_ID .'
                 sh 'docker build --build-arg JAR_FILE=target/devops-app.jar -t yasindeger48/$JOB_NAME:latest .'
             }
         }
-
         stage('Tests') {
             steps {
                 sh "mvn test"
             }
         }
-         stage('TRIVY FS SCAN') {
-             steps {
-sh """
+        stage('TRIVY FS SCAN') {
+            steps {
+                sh """
 docker run --rm -v $(pwd):/project aquasec/trivy filesystem /project > trivyfs.txt
-"""             }
-         }
+"""
+            }
+        }
         stage('push to docker hub') {
             steps {
-              withCredentials([usernamePassword(credentialsId: 'DockerHUB-YasinDeger48', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                withCredentials([usernamePassword(credentialsId: 'DockerHUB-YasinDeger48', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
                     sh 'docker push yasindeger48/$JOB_NAME:v$BUILD_ID'
                     sh 'docker push yasindeger48/$JOB_NAME:latest'
-                    }
-               }
+                }
+            }
         }
-        stage("TRIVY"){
-            steps{
+        stage("TRIVY") {
+            steps {
                 sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image yasindeger48/$JOB_NAME:latest > trivyimage.txt"
             }
         }
