@@ -61,6 +61,11 @@ pipeline {
                 sh "mvn test"
             }
         }
+         stage('TRIVY FS SCAN') {
+             steps {
+                 sh "trivy fs . > trivyfs.txt"
+             }
+         }
         stage('push to docker hub') {
             steps {
               withCredentials([usernamePassword(credentialsId: 'DockerHUB-YasinDeger48', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
@@ -69,6 +74,10 @@ pipeline {
                     }
                }
         }
-
+        stage("TRIVY"){
+            steps{
+                sh "trivy image yasindeger48/$JOB_NAME:latest > trivyimage.txt"
+            }
+        }
     }
 }
