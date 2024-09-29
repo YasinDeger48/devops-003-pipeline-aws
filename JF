@@ -1,0 +1,74 @@
+pipeline {
+    agent { label 'aws-jenkins-agent' }
+    tools{
+        maven "maven"
+        jdk "java17"
+    }
+        environment {
+        SCANNER_HOME = tool 'sonar-scanner'
+       // RELEASE = "1.0"
+       // IMAGE_NAME = "yasindeger48/$JOB_NAME:v"
+    }
+    stages {
+          stage('clear workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+        stage('clone it to jenkins') {
+            steps {
+                git credentialsId: 'GITHUB-YasinDeger48', url: 'https://github.com/YasinDeger48/devops-003-pipeline-aws.git'
+            }
+        }
+        stage('build maven project') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+        stage("SonarQube Analysis") {
+            steps {
+                withSonarQubeEnv('sonar-server') {
+                      sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=com.yasindeger:devops-003-pipeline-aws \
+                    -Dsonar.projectKey=com.yasindeger:devops-003-pipeline-aws \
+                    -Dsonar.java.binaries=target/classes'''
+
+                      //    sh '$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=devops-003-pipeline-aws -Dsonar.projectKey=com.yasindeger:devops-003-pipeline-aws -Dsonar.java.binaries=target/classes'
+                }
+            }
+        }
+        stage("SonarQube Quality Gate") {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'aws-sonartoken', timeout: 30
+                }
+            }
+        }
+        stage('clean up old docker images') {
+            steps {
+                sh 'docker image prune -a -f'
+            }
+        }
+
+        stage('build docker image') {
+            steps {
+                sh 'docker build --build-arg JAR_FILE=target/devops-app.jar -t yasindeger48/$JOB_NAME:v$BUILD_ID .'
+                sh 'docker build --build-arg JAR_FILE=target/devops-app.jar -t yasindeger48/$JOB_NAME:latest .'
+            }
+        }
+
+        stage('Tests') {
+            steps {
+                sh "mvn test"
+            }
+        }
+        stage('push to docker hub') {
+            steps {
+              withCredentials([usernamePassword(credentialsId: 'DockerHUB-YasinDeger48', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                    sh 'docker push yasindeger48/$JOB_NAME:v$BUILD_ID'
+                    sh 'docker push yasindeger48/$JOB_NAME:latest'
+                    }
+               }
+        }
+
+    }
+}
