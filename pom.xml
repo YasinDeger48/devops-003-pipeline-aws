@@ -92,5 +92,8 @@
 <!--        Sürümüne takılmadan tüm sürümler alttaki isimle çıkar-->
         <finalName>devops-app</finalName>
     </build>
+    <!-- Token: sadadasd12415423dgsdfs-->
+    <!-- for security-->
+
 
 </project>
