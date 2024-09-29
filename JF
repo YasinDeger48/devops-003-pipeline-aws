@@ -63,7 +63,7 @@ pipeline {
         }
          stage('TRIVY FS SCAN') {
              steps {
-                 sh "trivy fs . > trivyfs.txt"
+                 sh "docker run --rm -v $(pwd):/ aquasec/trivy filesystem . > trivyfs.txt"
              }
          }
         stage('push to docker hub') {
@@ -76,7 +76,7 @@ pipeline {
         }
         stage("TRIVY"){
             steps{
-                sh "trivy image yasindeger48/$JOB_NAME:latest > trivyimage.txt"
+                sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image yasindeger48/$JOB_NAME:latest > trivyimage.txt"
             }
         }
     }
