@@ -29,7 +29,7 @@ pipeline {
         }
         stage("SonarQube Analysis") {
             steps {
-                withSonarQubeEnv('sonar-server') {
+                withSonarQubeEnv('sonar-server-home') {
                     // sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=com.yasindeger:devops-003-pipeline-aws \
                     //  -Dsonar.projectKey=com.yasindeger:devops-003-pipeline-aws \
                     //  -Dsonar.java.binaries=target/classes'''
