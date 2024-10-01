@@ -7,6 +7,8 @@ This project demonstrates the implementation of a CI/CD pipeline for containeriz
 * Amazon EKS: As the Kubernetes cluster provider.
 * AWS CodePipeline: To automate the CI/CD workflow.
 
+<a><img src="./devops.png">https://github.com/YasinDeger48/devops-003-pipeline-aws</img></a>
+
 The project covers the end-to-end process, including infrastructure setup, pipeline creation, and deployment automation, ensuring a scalable and reliable environment for modern application delivery.
 
 
