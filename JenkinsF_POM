@@ -1,0 +1,86 @@
+pipeline {
+    agent any
+    tools {
+        maven "maven"
+        jdk "java17"
+    }
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
+    }
+    stages {
+        stage('clear workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+        stage('clone it to jenkins') {
+            steps {
+                git credentialsId: 'GITHUB-YasinDeger48', url: 'https://github.com/YasinDeger48/devops-003-pipeline-aws.git'
+            }
+        }
+        stage('build maven project') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+        stage('read artifactId from pom.xml') {
+            steps {
+                script {
+                    // artifactId'yi pom.xml'den okuma
+                    ARTIFACT_ID = sh(script: "mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout", returnStdout: true).trim()
+                    echo "Artifact ID: ${ARTIFACT_ID}"
+
+                    // groupId'yi pom.xml'den okuma
+                    GROUP_ID = sh(script: "mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout", returnStdout: true).trim()
+                    echo "Group ID: ${GROUP_ID}"
+                }
+            }
+        }
+        stage("SonarQube Analysis") {
+            steps {
+                withCredentials([string(credentialsId: 'sonar-token-local', variable: 'SONAR_TOKEN')]) {
+                    sh 'mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN'
+                }
+            }
+        }
+        stage('clean up old docker images') {
+            steps {
+                sh 'docker image prune -a -f'
+            }
+        }
+        stage('build docker image') {
+            steps {
+                script {
+                    // Docker image'ı pom.xml'den alınan artifactId'ye göre oluşturma
+                    sh "docker build --build-arg JAR_FILE=target/devops-app.jar -t ${GROUP_ID}/${ARTIFACT_ID}:v${BUILD_ID} ."
+                    sh "docker build --build-arg JAR_FILE=target/devops-app.jar -t ${GROUP_ID}/${ARTIFACT_ID}:latest ."
+                }
+            }
+        }
+        stage('Tests') {
+            steps {
+                sh "mvn test"
+            }
+        }
+        stage('TRIVY FS SCAN') {
+            steps {
+                sh '''
+                docker run --rm -v $(pwd):/project aquasec/trivy filesystem /project > trivyfs.txt
+                '''
+            }
+        }
+        stage("TRIVY") {
+            steps {
+                sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ${GROUP_ID}/${ARTIFACT_ID}:latest > trivyimage.txt"
+            }
+        }
+        stage('push to docker hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'DockerHUB-YasinDeger48', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                    sh "docker push ${GROUP_ID}/${ARTIFACT_ID}:v${BUILD_ID}"
+                    sh "docker push ${GROUP_ID}/${ARTIFACT_ID}:latest"
+                }
+            }
+        }
+    }
+}
